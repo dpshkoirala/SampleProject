@@ -2,25 +2,31 @@ name: C++ Build
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Use macos-latest if you want macOS
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install build tools
+      - name: Install compiler
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential cmake
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            sudo apt-get update
+            sudo apt-get install -y build-essential
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            xcode-select --install || echo "Xcode already installed"
+          fi
 
-      - name: Compile C++ program
+      - name: Build and run
         run: |
           g++ -std=c++20 src/main.cpp -o main
           ./main
