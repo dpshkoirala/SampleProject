@@ -26,6 +26,7 @@ jobs:
       run: |
         brew update
         brew install cmake gcc
+        
 
     - name: Configure
       run: cmake -S . -B build
