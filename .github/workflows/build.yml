@@ -1,7 +1,8 @@
-name: CMake Build
+name: Build Hello World
 
 on:
   push:
+    branches: [ "main" ]
   pull_request:
 
 jobs:
@@ -9,31 +10,43 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
+
     runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y cmake g++
+      # Linux dependencies
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++
 
-    # 3️⃣ Install dependencies on macOS
-    - name: Install dependencies (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        brew update
-        brew install cmake gcc
-        
+      # macOS dependencies
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install cmake gcc
 
-    - name: Configure
-      run: cmake -S . -B build
+      # Show versions
+      - name: Show tool versions
+        run: |
+          echo "OS: $RUNNER_OS"
+          cmake --version
+          g++ --version || g++-13 --version
 
-    - name: Build
-      run: cmake --build build
+      # Build
+      - name: Build
+        run: |
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+            g++-13 main.cpp -o hello
+          else
+            g++ main.cpp -o hello
+          fi
 
-    - name: Run executable
-      run: ./build/hello
-
+      # Run
+      - name: Run
+        run: ./hello
